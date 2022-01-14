@@ -56,7 +56,7 @@ class PostPagesTests(TestCase):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
-    def test_post_index_page_show_correct_context(self):
+    def test_post_index_show_correct_context(self):
         """Проверяем Context страницы index"""
         response = self.authorized_client.get(reverse('posts:index'))
         first_object = response.context['page_obj'][0]

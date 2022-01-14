@@ -2,7 +2,7 @@
 {% block title %}Вы подписаны на авторов{% endblock %}
 {% block header %} Посты авторов, на которых вы подписаны {% endblock %}
 {% load cache %}
-{% cache 20 index_page %}
+{% cache 20 index %}
   {% block content %}
   {% include "posts/includes/switcher.html" with follow=True %}
   {% load thumbnail %}

@@ -1,6 +1,6 @@
+from core.models import CreatedModel
 from django.contrib.auth import get_user_model
 from django.db import models
-from core.models import CreatedModel
 
 User = get_user_model()
 
@@ -48,7 +48,7 @@ class Post(CreatedModel):
         'Картинка',
         upload_to='posts/',
         blank=True
-    )  
+    )
 
     def __str__(self):
         return self.text[:20]
@@ -57,6 +57,7 @@ class Post(CreatedModel):
         verbose_name_plural = 'Посты'
         verbose_name = 'Пост'
         ordering = ('-pub_date',)
+
 
 class Comment(models.Model):
     post = models.ForeignKey(

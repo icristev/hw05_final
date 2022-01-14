@@ -20,7 +20,6 @@ def pagination(request, queryset):
     }
 
 
-
 def get_page(request, post_list):
     paginator = Paginator(post_list, POSTS_ON_INDEX)
     page_number = request.GET.get('page')
@@ -68,6 +67,7 @@ def profile(request, username):
 
 
 def post_detail(request, post_id):
+    template = 'posts/post_detail.html'
     post = get_object_or_404(Post, pk=post_id)
     comment = post.comments.all()
     form = CommentForm(request.POST or None)
@@ -78,7 +78,7 @@ def post_detail(request, post_id):
         'form': form,
         'author': author,
     }
-    return render(request, 'posts/post_detail.html', context)
+    return render(request, template, context)
 
 
 @login_required
@@ -99,8 +99,10 @@ def post_create(request):
 @login_required
 def post_edit(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
+    template1 = 'posts:post_detail'
+    template2 = 'posts/create_post.html'
     if post.author != request.user:
-        return redirect('posts:post_detail', post_id=post_id)
+        return redirect(template1, post_id=post_id)
 
     form = PostForm(
         request.POST or None,
@@ -109,26 +111,26 @@ def post_edit(request, post_id):
     )
     if form.is_valid():
         form.save()
-        return redirect('posts:post_detail', post_id=post_id)
+        return redirect(template1, post_id=post_id)
     context = {
         'post': post,
         'form': form,
         'is_edit': True,
     }
-    return render(request, 'posts/create_post.html', context)
-
+    return render(request, template2, context)
 
 
 @login_required
 def add_comment(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST or None)
+    template = 'posts:post_detail'
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
         comment.post = post
         comment.save()
-    return redirect('posts:post_detail', post_id=post_id)
+    return redirect(template, post_id=post_id)
 
 
 @login_required
@@ -153,6 +155,7 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
+    template = 'posts:profile'
     get_object_or_404(
         Follow, user=request.user, author__username=username).delete()
-    return redirect('posts:profile', username=username)
+    return redirect(template, username=username)
