@@ -165,20 +165,3 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(Comment.objects.count(), comment_count + 1)
         last_object = Comment.objects.order_by("-id").first()
         self.assertEqual(form_data['text'], last_object.text)
-
-    def test_cache_index(self):
-        """Проверка cache главной страницы"""
-        posts_count = Post.objects.count()
-        response = self.authorized_client.get('posts:index').content
-        Post.objects.create(
-            author=self.user,
-            text=self.other_post.text,
-            group=self.group
-        )
-        self.assertEqual(Post.objects.count(), posts_count + 1)
-
-        self.assertEqual(response, (
-            self.authorized_client.get('posts:index').content))
-        cache.clear()
-        self.assertEqual(response, (
-            self.authorized_client.get('posts:index').content))
