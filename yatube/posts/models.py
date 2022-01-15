@@ -85,8 +85,11 @@ class Comment(models.Model):
         help_text='Текст нового комментария',
     )
     created = models.DateTimeField(
-        auto_now_add=True, verbose_name='Дата публикации комментария'
-    )
+        auto_now_add=True, verbose_name='Дата публикации комментария')
+
+    class Meta:
+        verbose_name_plural = 'Комментарии'
+        verbose_name = 'Комментарий'
 
 
 class Follow(models.Model):
@@ -106,3 +109,11 @@ class Follow(models.Model):
         null=True,
         verbose_name='Имя автора',
     )
+
+    class Meta:
+        verbose_name_plural = 'Подписчики'
+        verbose_name = 'Подписчика'
+        models.UniqueConstraint(
+            fields=['user', 'author'],
+            name='unique_following'
+        )

@@ -4,9 +4,11 @@ from http import HTTPStatus
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
-from posts.models import Group, Post
+
+from posts.models import Comment, Group, Post
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 User = get_user_model()
@@ -27,12 +29,23 @@ class PostCreateFormTests(TestCase):
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый текст поста',
-            group=cls.group,)
+            group=cls.group,
+        )
+        cls.comment = Comment.objects.create(
+            author=cls.user,
+            text='Тестовый комментарий для теста'
+        )
+        cls.other_post = Post.objects.create(
+            author=cls.user,
+            text='Другой текст сообщения для теста',
+            group=cls.group,
+        )
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        cache.clear()
 
     def setUp(self):
         self.authorized_client = Client()
@@ -115,3 +128,57 @@ class PostCreateFormTests(TestCase):
         self.assertRedirects(response, post_edit_redirect)
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertNotEqual(self.post.text, form_data['text'])
+
+    def test_create_comment_guest_client(self):
+        """Cозданиt комментария гостевого пользователя"""
+        comment_count = Comment.objects.count()
+
+        form_data = {
+            'text': self.comment.text,
+            'author': self.comment.author,
+        }
+        response = self.client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
+            data=form_data,
+            follow=True
+        )
+        post_create_url = reverse(
+            'posts:add_comment', kwargs={'post_id': self.post.id})
+        comment_create_redirect = f'{login_create_post}?next={post_create_url}'
+        self.assertRedirects(response, comment_create_redirect)
+        self.assertEqual(Comment.objects.count(), comment_count)
+
+    def test_create_comment(self):
+        """Комментарий к посту авторизованного пользователя."""
+        comment_count = Comment.objects.count()
+
+        form_data = {
+            'text': self.comment.text,
+        }
+        response = self.authorized_client.post(
+            reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
+            data=form_data,
+            follow=True
+        )
+        self.assertRedirects(response, reverse(
+            'posts:post_detail', kwargs={'post_id': self.post.id}))
+        self.assertEqual(Comment.objects.count(), comment_count + 1)
+        last_object = Comment.objects.order_by("-id").first()
+        self.assertEqual(form_data['text'], last_object.text)
+
+    def test_cache_index(self):
+        """Проверка cache главной страницы"""
+        posts_count = Post.objects.count()
+        response = self.authorized_client.get('posts:index').content
+        Post.objects.create(
+            author=self.user,
+            text=self.other_post.text,
+            group=self.group
+        )
+        self.assertEqual(Post.objects.count(), posts_count + 1)
+
+        self.assertEqual(response, (
+            self.authorized_client.get('posts:index').content))
+        cache.clear()
+        self.assertEqual(response, (
+            self.authorized_client.get('posts:index').content))

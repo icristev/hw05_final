@@ -1,9 +1,10 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..models import Group, Post
+from ..models import Follow, Group, Post
 
 User = get_user_model()
 
@@ -34,6 +35,7 @@ class PostPagesTests(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache.clear()
 
     def test_pages_uses_correct_template(self):
         """URL-адрес (view) использует соответствующий шаблон."""
@@ -156,3 +158,78 @@ class PostPagesTests(TestCase):
                 kwargs={'slug': self.other_group.slug})
         )
         self.assertNotIn(new_post, response.context['page_obj'])
+
+    def test_cache_index(self):
+        """Проверка cache главной страницы"""
+        posts_count = Post.objects.count()
+        response = self.authorized_client.get('posts:index').content
+        Post.objects.create(
+            author=self.user,
+            text=self.post.text,
+            group=self.group
+        )
+        self.assertEqual(Post.objects.count(), posts_count + 1)
+
+        self.assertEqual(response, (
+            self.authorized_client.get('posts:index').content))
+        cache.clear()
+        self.assertEqual(response, (
+            self.authorized_client.get('posts:index').content))
+
+
+class FollowsTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user1 = User.objects.create_user(username='ivan')
+        cls.user2 = User.objects.create_user(username='nikolay')
+
+    def setUp(self):
+        self.auth_client1 = Client()
+        self.auth_client1.force_login(FollowsTests.user1)
+        self.auth_client2 = Client()
+        self.auth_client2.force_login(FollowsTests.user2)
+        cache.clear()
+
+    def test_posts_auth_add_delete_follow(self):
+        """Авторизованный пользователь может подписаться."""
+        follows_count = Follow.objects.count()
+        self.assertFalse(Follow.objects.filter(
+            user=FollowsTests.user1,
+            author=FollowsTests.user2).exists())
+        self.auth_client1.get(reverse('posts:profile_follow',
+                                      args=[FollowsTests.user2]))
+        self.assertEqual(Follow.objects.count(), follows_count + 1)
+        self.assertTrue(Follow.objects.filter(
+            user=FollowsTests.user1, author=FollowsTests.user2).exists())
+
+    def test_posts_auth_add_delete_follow(self):
+        """Авторизованный пользователь может отписаться."""
+        Follow.objects.get_or_create(user=FollowsTests.user1,
+                                     author=FollowsTests.user2)
+        follows_count = Follow.objects.count()
+        self.auth_client1.get(reverse('posts:profile_unfollow',
+                                      args=[FollowsTests.user2]))
+        self.assertEqual(Follow.objects.count(), follows_count - 1)
+        self.assertFalse(Follow.objects.filter(
+            user=FollowsTests.user1, author=FollowsTests.user2).exists())
+
+    def test_posts_new_post_add_to_follower(self):
+        """Новый пост появляется в ленте подписчиков."""
+        Follow.objects.create(user=FollowsTests.user2,
+                              author=FollowsTests.user1)
+        response = self.auth_client2.get(reverse('posts:follow_index'))
+        count_posts = len(response.context['page_obj'])
+        Post.objects.create(author=FollowsTests.user1, text='new_text')
+        response = self.auth_client2.get(reverse('posts:follow_index'))
+        new_count_posts = len(response.context['page_obj'])
+        self.assertEqual(count_posts + 1, new_count_posts)
+
+    def test_posts_new_post_not_add_to_not_follower(self):
+        """Новый пост не появляется в ленте не подписчиков."""
+        response = self.auth_client2.get(reverse('posts:follow_index'))
+        count_posts = len(response.context['page_obj'])
+        Post.objects.create(author=FollowsTests.user1, text='new_text')
+        response = self.auth_client2.get(reverse('posts:follow_index'))
+        new_count_posts = len(response.context['page_obj'])
+        self.assertEqual(count_posts, new_count_posts)
