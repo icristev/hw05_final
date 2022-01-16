@@ -191,7 +191,7 @@ class FollowsTests(TestCase):
         self.auth_client2.force_login(FollowsTests.user2)
         cache.clear()
 
-    def test_posts_auth_add_delete_follow(self):
+    def test_posts_auth_add_follow(self):
         """Авторизованный пользователь может подписаться."""
         follows_count = Follow.objects.count()
         self.assertFalse(Follow.objects.filter(
@@ -203,7 +203,7 @@ class FollowsTests(TestCase):
         self.assertTrue(Follow.objects.filter(
             user=FollowsTests.user1, author=FollowsTests.user2).exists())
 
-    def test_posts_auth_add_delete_follow(self):
+    def test_posts_auth_delete_follow(self):
         """Авторизованный пользователь может отписаться."""
         Follow.objects.get_or_create(user=FollowsTests.user1,
                                      author=FollowsTests.user2)
