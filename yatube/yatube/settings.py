@@ -9,7 +9,7 @@ SECRET_KEY = 'django-insecure-r-k^=y6ldo!79e*cs2cnm1*nv(rv1%tnc*^%iio3g&-4!j0(0=
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
 
 
 # Application definition
@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
     'sorl.thumbnail',
 ]
 
@@ -36,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'yatube.urls'
@@ -141,3 +143,4 @@ MEDIA_URL = '/media/'
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

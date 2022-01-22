@@ -22,9 +22,10 @@ class Group(models.Model):
 
 
 class Post(CreatedModel):
+    title = models.CharField(max_length=50, verbose_name='Название поста', blank=False)
     text = models.TextField(
         null=True,
-        max_length=400,
+        max_length=8000,
         verbose_name='Текст поста',
         help_text='Текст нового поста',
     )
@@ -47,7 +48,7 @@ class Post(CreatedModel):
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
-        blank=True
+        blank=False
     )
 
     def __str__(self):

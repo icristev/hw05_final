@@ -1,11 +1,21 @@
 {% load user_filters %}
 
 {% if user.is_authenticated %}
+
+<style>
+  .btn-primary {margin-top: 15px}
+  .container1 {margin-bottom: 200px}
+</style>
+
+<div class="container1">
   <div class="card my-4">
+
     <h5 class="card-header">Добавить комментарий:</h5>
+    
     <div class="card-body">
       <form method="post" action="{% url 'posts:add_comment' post.id %}">
-        {% csrf_token %}      
+
+        {% csrf_token %} 
         <div class="form-group mb-2">
           {{ form.text}}
         </div>
@@ -13,7 +23,8 @@
       </form>
     </div>
   </div>
-{% endif %}
+{% endif %}">
+
 
 {% for comments in comment %}
   <div class="media mb-4">
@@ -29,3 +40,4 @@
       </div>
     </div>
 {% endfor %} 
+</div>

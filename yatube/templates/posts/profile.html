@@ -7,10 +7,22 @@
 {% endblock %}
 
 {% block content %}
+
+<style>
+  li {list-style-type: none;}
+  ul {margin-left: 0; padding-left: 0;}
+  .h1 {margin-top: 35px;}
+  .profile_image {width: 250px;}
+  .card {margin-right: 15px; padding: 0px;}
+  .card-title, .card-text, .btn-primary { margin-left: 14px; margin-right: 14px; }
+  .btn-primary, .btn-secondary {font-size: 13px;}
+</style>
+
   <main>
     <div class="container py-5">        
-      <h1>Все посты пользователя {{ author.get_full_name }} </h1>
-      <h3>Всего постов: {{ count_user_posts }} </h3>
+      <h1>Все посты: {{ author }} </h1>
+      <h4>Всего постов: {{ author.posts.count }} </h4>
+
       {% if request.user.username != author.username %}
         {% if following %}
           <a class="btn btn-lg btn-light"
@@ -24,31 +36,53 @@
             </a>
         {% endif %}
       {% endif %}  
-      {% for post in page_obj %}
-        <article>
-          <ul>
-            <li>
-              Автор: {{ author.get_full_name }}
-            </li>
-            <li>
-              Дата публикации: {{ post.pub_date|date:"d E Y" }}
-            </li>
-          </ul>
-          {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
-            <img class="card-img my-2" src="{{ im.url }}">
+
+ 
+
+  
+
+
+
+
+      <div class="row">
+      
+        {% for post in page_obj %}
+        <div class="card" style="width: 18rem;">
+          
+          {% thumbnail post.image "1920" crop="center" upscale=True as im %}
+          <img class="card-img-top" src="{{ im.url }}" alt="Главное изображение">
           {% endthumbnail %}
-          <p>
-            {{ post.text }}
-          </p>
-          <a href="{% url 'posts:post_detail' post.id %}">подробная информация </a>
-        </article>
-        {% if post.group %}
-          <a href="{% url 'posts:group_posts' post.group.slug %}">все записи группы</a>
-        {% endif %}
-          {% if not forloop.last %}
-            <hr>
-          {% endif %}
-      {% endfor %}
+          <div class="card-body px-0">
+            <h5 class="card-title">{{ post.title|slice:":50" }}</h5>
+
+        <div class="row">
+          <div class="col-xs-4">
+                <a href="{% url 'posts:post_detail' post.id %}" id="submit" name="button" value="register" class="btn btn-primary">Открыть</a>
+            {% if post.group %}
+              <a href="{% url 'posts:group_posts' post.group.slug %}" id="cancel" name="button" value="cancel" class="btn btn-secondary">{{post.group.title}} </a>
+            {% endif%}
+
+          </div>
+          
+        </div>
+        
+
+
+
+
+        
+          
+          </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+
+
+
+
+
       {% include 'posts/includes/paginator.html' %}
     </div>
   </main>

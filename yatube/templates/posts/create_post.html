@@ -19,6 +19,7 @@
               <div class="card-header">       
                 Новый пост             
               </div>
+
               <div class="card-body">        
                 <form method="post" enctype="multipart/form-data" {% if post  %} action="{% url 'posts:post_edit' post_id=post.id %}" {% endif %}>
                   {% csrf_token %}
@@ -38,6 +39,7 @@
                     {% endif %}
                   </div>
                   {% endfor %}
+
                   <div class="d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary">
                       {% if is_edit %}

@@ -6,24 +6,60 @@
   {{ group.title }}
 {% endblock %}
 
+
+
+
 {% block content %}
+
+
+<style>
+  li {list-style-type: none;}
+  ul {margin-left: 0; padding-left: 0;}
+  .h1 {margin-top: 35px;}
+  .btn-primary, .btn-secondary, .data { margin-top: 13px;   display: inline-block;}
+  .post_image {width: 350px;}
+  
+</style>
+
+
+
   <div class="container">
+    <p></p>
     <h1>{{ group.title }}</h1>
-    <p>{{ group.description }}</p>
+    <h5>{{ group.description }}</h5>
     {% for post in page_obj %}
         <ul>
-          <li>Автор: {{ post.author.get_full_name }}
-            <a href="{% url 'posts:profile' post.author %}">
-              все посты пользователя
+          <li>{{ post.author.get_full_name }}
+            <a href="{% url 'posts:profile' post.author %}" name="button" value="register" class="btn btn-primary">
+              все посты: {{ post.author.username }}
             </a>
+
+
+    
+
+
+
           </li>
-          <li>Дата публикации: {{ post.pub_date|date:"d E Y" }}</li>
+          <li></li>
         </ul>
-        {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
-          <img class="card-img my-2" src="{{ im.url }}">
+        <div class='post_image'>
+        {% thumbnail post.image "960"  crop="center" upscale=True as im %}
+          <img class="card-img my-2" src="{{ im.url }}" >
         {% endthumbnail %}
-        <p>{{ post.text }}</p>
-        <a href="{% url 'posts:post_detail' post.id %}">подробная информация</a>
+        <div>
+
+
+
+
+
+        <div class="card-body px-0">
+          <h5 class="card-title">{{ post.title|slice:":50" }}</h5>
+          <p class="card-text">{{ post.text|slice:":200" }}...</p>
+          <li>{{ post.pub_date|date:"d E Y" }}</li>
+          <a href="{% url 'posts:post_detail' post.id %}" class="btn btn-primary">Подробнее</a>
+        </div>
+
+
         {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
     {% include 'posts/includes/paginator.html' %}

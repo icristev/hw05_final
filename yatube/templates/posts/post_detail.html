@@ -3,40 +3,79 @@
 {% block header %}Пост: {{post.text|truncatechars:30}} {% endblock %}
 {% block content %}
 {% load thumbnail %}
-  <main>
-    <div class="row">
-      <aside class="col-12 col-md-3">
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item">
-            Дата публикации:
-            {{ post.pub_date|date:"d E Y" }}
-          </li>
-          {% if post.group %}
-            <li class="list-group-item">
-              Все записи группы
-              <a href="{% url 'posts:group_posts' post.group.slug %}">
-                {{post.group.title}}</a>
-            </li>
-          {% endif %}
-          <li class="list-group-item">
-            Автор:
-            <a href="{% url 'posts:profile' post.author.username %}"> {{post.author.username}}</a>
-          </li>
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            Всего постов автора: <span>
-            {{post.author.posts.count}}</span>
-          </li>
-        </ul>
-      </aside>
-      {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
-       <img class="card-img my-2" src="{{ im.url }}">
+
+<style>
+  li {list-style-type: none;}
+
+  .h1 {margin-top: 15px;}
+  .post_image {width: 350px;}
+  .col-xs-4, .row{ display: inline-block; }
+  
+</style>
+
+<a href="{% url 'posts:profile' post.author.username %}"  name="button" value="register" class="btn btn-primary"> {{ post.author.username }} </a>
+    <div class="pb-3">
+      <h1 class="h1">{{ post.title}}</h1>
+    </div>
+    <div class='post_image'>
+      {% thumbnail post.image "960" crop="center" upscale=True as im %}
+        <img class="card-img my-2" src="{{ im.url }}">
       {% endthumbnail %}
+    </div>
+
+
+    <div class="row">
       <article class="col-12 col-md-9">
-        <p class="test">           
+
+        <p class="text">           
           {{ post.text|linebreaks }}
         </p>
+      </article>
+      
+        <p class='data'>
+          {{ post.pub_date|date:"d E Y" }}
+        </p>
+
+       
+
+        
+    
+
+
+
+
+
+
+
+
+    <div class="row">
+      <div class="col-xs-4">
+
+        {% if author == user %} 
+        <a href="{% url 'posts:post_edit' post.pk %}">
+          <button type="button" class="btn btn-outline-danger">Редактировать запись</button>
+        </a>
+        {% endif %}
+
+        {% if post.group %}
+          <a href="{% url 'posts:group_posts' post.group.slug %}" name="button" value="cancel" class="btn btn-secondary"> {{ post.group.title }} </a>
+        {% endif%}
+
+      </div>
+      
+    </div>
+
+
+
+
+
+
+
+
+
+
         {% include 'posts/includes/comments.html' %}
       </article>
     </div>
-  </main>
+
 {% endblock %}
